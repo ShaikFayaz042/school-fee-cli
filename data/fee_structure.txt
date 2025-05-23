@@ -1,0 +1,3 @@
+class1,5000
+class2,7000
+class3,9000
