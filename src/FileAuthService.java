@@ -3,7 +3,7 @@ import java.io.FileReader;
 
 public class FileAuthService {
     public String login(String username, String password) {
-        try (BufferedReader reader = new BufferedReader(new FileReader("../data/users.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("data/users.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
