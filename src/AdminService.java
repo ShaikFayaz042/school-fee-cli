@@ -1,12 +1,11 @@
-import Models.Student;
-import Models.Payment;
 import Models.FeeStructure;
-
+import Models.Payment;
+import Models.Student;
 import java.util.*;
 
 public class AdminService {
-    private List <Student> students;
-    private List <Payment> payments;
+    private List<Student> students;
+    private List<Payment> payments;
     private List<FeeStructure> feeStructures;
 
     public AdminService() {
@@ -24,9 +23,12 @@ public class AdminService {
             System.out.println("2. View Pending Payments");
             System.out.println("3. View Completed Payments");
             System.out.println("4. Send Payment Reminders");
+            System.out.println("5. Add Student");
+            System.out.println("6. Remove Student");
             System.out.println("0. Logout");
             System.out.print("Enter choice: ");
             choice = sc.nextInt();
+            sc.nextLine();  // Clear buffer
 
             switch (choice) {
                 case 1:
@@ -41,6 +43,17 @@ public class AdminService {
                 case 4:
                     sendReminders();
                     break;
+                case 5:
+                    addStudent(sc);
+                    break;
+                case 6:
+                    removeStudent(sc);
+                    break;
+                case 0:
+                    System.out.println("Logging out...");
+                    break;
+                default:
+                    System.out.println("Invalid choice!");
             }
         } while (choice != 0);
     }
@@ -87,6 +100,53 @@ public class AdminService {
             if (paid < total) {
                 System.out.println("Reminder sent to: " + s.getName() + " (Due: " + (total - paid) + ")");
             }
+        }
+    }
+
+    private void addStudent(Scanner sc) {
+        System.out.println("\n--- Add Student ---");
+        System.out.print("Enter Student ID: ");
+        int id = sc.nextInt();
+        sc.nextLine();  // clear buffer
+
+        for (Student s : students) {
+            if (s.getId() == id) {
+                System.out.println("Student ID already exists.");
+                return;
+            }
+        }
+
+        System.out.print("Enter Name: ");
+        String name = sc.nextLine();
+
+        System.out.print("Enter Class Name: ");
+        String className = sc.nextLine();
+
+        Student newStudent = new Student(id, name, className, 0);
+        students.add(newStudent);
+        FeeManager.saveStudents(students);
+        System.out.println("Student added successfully.");
+    }
+
+    private void removeStudent(Scanner sc) {
+        System.out.println("\n--- Remove Student ---");
+        System.out.print("Enter Student ID to remove: ");
+        int id = sc.nextInt();
+
+        Student toRemove = null;
+        for (Student s : students) {
+            if (s.getId() == id) {
+                toRemove = s;
+                break;
+            }
+        }
+
+        if (toRemove == null) {
+            System.out.println("Student not found.");
+        } else {
+            students.remove(toRemove);
+            FeeManager.saveStudents(students);
+            System.out.println("Student removed successfully.");
         }
     }
 
