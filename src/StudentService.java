@@ -1,8 +1,9 @@
-import Models.Student;
-import Models.Payment;
 import Models.FeeStructure;
-
+import Models.Payment;
+import Models.Student;
+import java.time.LocalDate;
 import java.util.*;
+
 
 public class StudentService {
     private int studentId;
@@ -21,7 +22,7 @@ public class StudentService {
         Scanner sc = new Scanner(System.in);
         int choice;
         do {
-            System.out.println("\n--- Parent Menu ---");
+            System.out.println("\n--- Student Menu ---");
             System.out.println("1. View Student Details");
             System.out.println("2. Make Payment");
             System.out.println("3. View Payment History");
@@ -79,14 +80,22 @@ public class StudentService {
             return;
         }
 
+        // Update student's feesPaid
         student.setFeesPaid(paid + amount);
         FeeManager.updateStudent(student);
 
-        Payment payment = new Payment(student.getId(), new Date().toString(),amount);
-        payments.add(payment);
-        FeeManager.savePayments(payments);
+        // Create new payment with current date (ISO format) and random transaction ID
+        String date = LocalDate.now().toString();
+        String txnId = "TXN" + new Random().nextInt(999999);
+        Payment payment = new Payment(student.getId(), date, amount, txnId);
 
-        System.out.println("Payment successful!");
+        // Append this payment to file
+        FeeManager.addPayment(payment);
+
+        // Also add to local payments list for session consistency
+        payments.add(payment);
+
+        System.out.println("Payment successful! Transaction ID: " + txnId);
     }
 
     private void viewPaymentHistory() {
@@ -94,7 +103,7 @@ public class StudentService {
         boolean found = false;
         for (Payment p : payments) {
             if (p.getStudentId() == student.getId()) {
-                System.out.println("Amount: " + p.getAmount() + ", Date: " + p.getDate());
+                System.out.println("Amount: " + p.getAmount() + ", Date: " + p.getDate() + ", Transaction ID: " + p.getTransactionId());
                 found = true;
             }
         }
