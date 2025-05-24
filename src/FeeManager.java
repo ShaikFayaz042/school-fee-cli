@@ -1,11 +1,11 @@
-import Models.Student;
-import Models.Payment;
 import Models.FeeStructure;
-
+import Models.Payment;
+import Models.Student;
 import java.io.*;
 import java.util.*;
 
 public class FeeManager {
+
     public static List<Student> loadStudents() {
         List<Student> list = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader("data/students.txt"))) {
@@ -30,12 +30,16 @@ public class FeeManager {
         try (BufferedReader br = new BufferedReader(new FileReader("data/payments.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+
                 String[] parts = line.split(",");
-                list.add(new Payment(
-                    Integer.parseInt(parts[0]),
-                    parts[1],
-                    Integer.parseInt(parts[2])
-                ));
+
+                int studentId = Integer.parseInt(parts[0]);
+                String date = parts[1];
+                int amount = Integer.parseInt(parts[2]);
+                String txnId = parts.length > 3 ? parts[3] : "TXN000000";  // fallback for older data
+
+                list.add(new Payment(studentId, date, amount, txnId));
             }
         } catch (Exception e) {
             System.out.println("Error loading payments: " + e.getMessage());
@@ -60,7 +64,7 @@ public class FeeManager {
     public static void saveStudents(List<Student> students) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("data/students.txt"))) {
             for (Student s : students) {
-                bw.write(s.toString());
+                bw.write(s.getId() + "," + s.getName() + "," + s.getClassName() + "," + s.getFeesPaid());
                 bw.newLine();
             }
         } catch (Exception e) {
@@ -68,16 +72,28 @@ public class FeeManager {
         }
     }
 
-    public static void savePayments(List<Payment> payments) {
+    // Append single payment to payments.txt
+    public static void addPayment(Payment payment) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("data/payments.txt", true))) {
+            bw.write(payment.getStudentId() + "," + payment.getDate() + "," + payment.getAmount() + "," + payment.getTransactionId());
+            bw.newLine();
+        } catch (Exception e) {
+            System.out.println("Error writing payment: " + e.getMessage());
+        }
+    }
+
+    // Save full payment list (overwrite)
+    public static void savePayments(List<Payment> payments) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("data/payments.txt"))) {
             for (Payment p : payments) {
-                bw.write(p.toString());
+                bw.write(p.getStudentId() + "," + p.getDate() + "," + p.getAmount() + "," + p.getTransactionId());
                 bw.newLine();
             }
         } catch (Exception e) {
             System.out.println("Error saving payments: " + e.getMessage());
         }
     }
+
     public static Student getStudentById(int id) {
         List<Student> students = loadStudents();
         for (Student s : students) {
@@ -87,6 +103,7 @@ public class FeeManager {
         }
         return null;
     }
+
     public static void updateStudent(Student updatedStudent) {
         List<Student> students = loadStudents();
 
